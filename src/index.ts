@@ -18,24 +18,40 @@ wss.on("connection", (ws) => {
                   
         const parsedMessage = JSON.parse(RawMessage.toString())
 
+        console.log(RawMessage)
+        console.log(parsedMessage)
+
         if (parsedMessage.type == "sender"){
+            console.log("sender connected")
             SenderWS = ws
+            if(SenderWS){
+                console.log("true for sender")
+            }
         }
+
         else if(parsedMessage.type == "reciever"){
+            console.log("reciever connected")
             RecieverWS = ws
+            if(RecieverWS){
+                console.log("true for reciever")
+            }
         }
-        else if(parsedMessage.type == "createOffer"){
-            if(ws = SenderWS!){
-                RecieverWS?.send(JSON.stringify(RawMessage));
+
+        else if(parsedMessage.type == "offer"){
+            if(ws == SenderWS!){
+                RecieverWS?.send(JSON.stringify({type : parsedMessage.type , sdp : parsedMessage.sdp}));
+                console.log("offer sent to reciever", RawMessage)
             }
             else {
                 console.log("no sender socket")
                 return;
             }
         }
+
         else if(parsedMessage.type == "createAnswer"){
-            if (ws = RecieverWS!){
-                SenderWS?.send(JSON.stringify(RawMessage))
+            if (ws == RecieverWS!){
+                SenderWS?.send(JSON.stringify({type : parsedMessage.type , sdp : parsedMessage.sdp}))
+                console.log("answer sent to sender")
             }
         }
         else if (parsedMessage.type == "iceCandidate"){

@@ -2,48 +2,69 @@ import { useEffect, useState } from "react";
 import useSocket from "../hooks/useSocket"
 
 const Sender = () => {
-   
-    const socket = useSocket();
+   console.log("2");
+    const {socket , connected }= useSocket();
     const [pc , setPc] = useState<RTCPeerConnection | null>(null)
 
     useEffect(()=> {
    
-        if(!socket) {
+        if(!socket || !connected) {
+            console.log("------")
             return
-        }
-
-        socket.send(JSON.stringify({type : "sender"})); 
-
-
-
-    }, [])
-
-    const HandleMessage = async () => {
-        if (!socket){
-            return;
-        }
-
-        socket.onmessage = async (event) => {
-            const message = JSON.parse(event.data);
-
-            if(message.type === "createAnswer"){
-           await pc?.setRemoteDescription(message.sdp)
-            }
         }
 
         const PC = new RTCPeerConnection();
         setPc(PC);
 
+        socket.send(JSON.stringify({type : "sender"})); 
+            console.log(" sender tsx send socket --------------")
 
-         PC.onnegotiationneeded = async() => {
-            const offer =  await PC.createOffer();
-            await PC.setLocalDescription(offer)
-            socket.send(JSON.stringify({
-                type : "createOffer",
-                sdp : PC.localDescription
-            }))
-         }
-        
+
+
+    }, [connected])
+
+    const HandleMessage = async () => {
+        if (!socket){
+            console.log("return");
+            return;
+        }
+
+        console.log("clicked")
+       
+        const offer =  await pc?.createOffer();
+        console.log("created offer")
+
+        await pc?.setLocalDescription(offer)
+        const type = pc?.localDescription?.type
+        const sdp = pc?.localDescription?.sdp
+
+        socket.send(JSON.stringify({
+            type,
+            sdp
+        }))
+
+        console.log("11111111111111111")
+
+        // pc!.onnegotiationneeded = async() => {
+        //     console.log("created offer")
+        //     const offer =  await PC.createOffer();
+        //     await pc!.setLocalDescription(offer)
+        //     socket.send(JSON.stringify({
+        //         type : "createOffer",
+        //         sdp : pc!.localDescription
+        //     }))
+        //     console.log("11111111111111111")
+        //  }
+
+        socket.onmessage = async (event) => {
+            const message = JSON.parse(event.data);
+
+            if(message.type === "createAnswer"){
+                console.log("22222222222222222")
+           await pc?.setRemoteDescription(message.sdp)
+            }
+        }
+
     }
 
     return <>
@@ -56,3 +77,5 @@ const Sender = () => {
 
 
 }
+
+export default Sender;
