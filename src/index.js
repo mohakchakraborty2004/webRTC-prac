@@ -44,10 +44,10 @@ wss.on("connection", function (ws) {
         }
         else if (parsedMessage.type == "iceCandidate") {
             if (ws == SenderWS) {
-                RecieverWS === null || RecieverWS === void 0 ? void 0 : RecieverWS.send(JSON.stringify(RawMessage));
+                RecieverWS === null || RecieverWS === void 0 ? void 0 : RecieverWS.send(JSON.stringify({ type: parsedMessage.type, candidate: parsedMessage.candidate }));
             }
             else if (ws == RecieverWS) {
-                SenderWS === null || SenderWS === void 0 ? void 0 : SenderWS.send(JSON.stringify(RawMessage));
+                SenderWS === null || SenderWS === void 0 ? void 0 : SenderWS.send(JSON.stringify({ type: parsedMessage.type, candidate: parsedMessage.candidate }));
             }
         }
     });

@@ -56,9 +56,9 @@ wss.on("connection", (ws) => {
         }
         else if (parsedMessage.type == "iceCandidate"){
             if(ws == SenderWS!){
-                RecieverWS?.send(JSON.stringify(RawMessage));
+                RecieverWS?.send(JSON.stringify({type : parsedMessage.type, candidate : parsedMessage.candidate}));
             } else if (ws == RecieverWS!){
-                SenderWS?.send(JSON.stringify(RawMessage))
+                SenderWS?.send(JSON.stringify({type : parsedMessage.type, candidate : parsedMessage.candidate}))
             }
         }
     })

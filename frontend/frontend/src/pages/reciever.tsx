@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSocket from "../hooks/useSocket";
 
 export default function Reciever() {
+
+    
 
     const {socket, connected  } = useSocket();
     const [pc , setPC] = useState<RTCPeerConnection | null>()
@@ -29,27 +31,49 @@ export default function Reciever() {
     // }
 
     if(socket && pc){
+
+      
+
         socket.onmessage = async(event) => {
             const message =  JSON.parse(event.data);
   
-            console.log(message)
+            console.log("this is parsed msg on reciever side:" , message)
+
+            pc.onicecandidate = (event) => {
+                console.log("these are ice cands reciever side : ", event.candidate);
+                socket.send(JSON.stringify({type : "iceCandidate", candidate : event.candidate}))
+            }
+
+            pc.ontrack = (event) => {
+              //console.log(event)
+              const video = document.createElement('video');
+              document.body.appendChild(video);
+
+              video.srcObject = new MediaStream([event.track]);
+              video.play();
+            }
       
 
             if (message.type == "offer") {
             
-            console.log("reciever.tsx 333333333333333333333")
+           // console.log("reciever.tsx 333333333333333333333")
             await pc.setRemoteDescription(message);
 
             const answer = await pc.createAnswer()
-            console.log(answer)
+          //  console.log(answer)
             await pc.setLocalDescription(answer)
          
             socket.send(JSON.stringify({
                 type : "createAnswer", 
                 sdp : answer
             }))
-            }
             console.log("444444444444444444444")
+            }
+            else if(message.type === "iceCandidate"){
+                await pc.addIceCandidate(message.candidate);
+                console.log("ice candidate added on reciever")
+            }
+           
             
         }
     }
@@ -59,6 +83,9 @@ export default function Reciever() {
 
     return <>
     <h1>reciever</h1>
+
+    
+
     </>
 
 }
